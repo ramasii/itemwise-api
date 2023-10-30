@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql")
+const tesjwt = require("../tesjwt");
 const dbConfig = require('../dbConfig');
 
 const router = express.Router()
@@ -8,9 +8,11 @@ const table = "data_barang" // ubah tabel jika perlu
 const fields = ["id_barang", "id_user", "id_inventory", "kode_barang", "nama_barang", "catatan", "stok_barang", "harga_beli", "harga_jual", "photo_barang", "added", "edited"]
 
 // get all
-router.get(`/`, async (req, res) => {
+router.get(`/`, tesjwt.verifyToken, async (req, res) => {
     try {
-        dbConfig.query(`SELECT * FROM ${table}`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table}
+        INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
+        INNER JOIN users ON ${table}.id_user = users.id_user`, (err, result) => {
             if (err) {
                 res.status(500).send("terjadi eror di server");
                 return;
@@ -26,7 +28,7 @@ router.get(`/`, async (req, res) => {
 });
 
 // get by id_barang
-router.get(`/:id_barang`, async (req, res) => {
+router.get(`/:id_barang`, tesjwt.verifyToken, async (req, res) => {
     var id_barang = req.params.id_barang
     try {
         dbConfig.query(`SELECT * FROM ${table} 
@@ -49,10 +51,13 @@ router.get(`/:id_barang`, async (req, res) => {
 });
 
 // get by id_user
-router.get(`/byUser/:id_user`, async (req, res) => {
+router.get(`/byUser/:id_user`, tesjwt.verifyToken, async (req, res) => {
     var id_user = req.params.id_user
     try {
-        dbConfig.query(`SELECT * FROM ${table} INNER JOIN users ON ${table}.id_user=users.id_user WHERE ${table}.id_user="${id_user}"`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table} 
+        INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
+        INNER JOIN users ON ${table}.id_user = users.id_user
+        WHERE ${table}.id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
@@ -69,10 +74,12 @@ router.get(`/byUser/:id_user`, async (req, res) => {
 });
 
 // get by id_inventory
-router.get(`/byInventory/:id_inventory`, async (req, res) => {
+router.get(`/byInventory/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
     var id_inventory = req.params.id_inventory
     try {
-        dbConfig.query(`SELECT * FROM ${table} INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory WHERE ${table}.id_inventory="${id_inventory}"`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table} 
+        INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
+        WHERE ${table}.id_inventory="${id_inventory}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
@@ -89,7 +96,7 @@ router.get(`/byInventory/:id_inventory`, async (req, res) => {
 });
 
 // add item
-router.post(`/`, async (req, res) => {
+router.post(`/`, tesjwt.verifyToken, async (req, res) => {
     try {
         var id_barang = req.query.id_barang
         var id_user = req.query.id_user
@@ -119,9 +126,9 @@ router.post(`/`, async (req, res) => {
 });
 
 // update item
-router.put(`/:id_barang`, async (req, res) => {
+router.put(`/:id_barang`, tesjwt.verifyToken, async (req, res) => {
     try {
-        
+
         var id_barang = req.params.id_barang
         var id_user = req.query.id_user
         var id_inventory = req.query.id_inventory
@@ -157,7 +164,7 @@ router.put(`/:id_barang`, async (req, res) => {
 });
 
 // delete
-router.delete(`/:id_barang`, async (req, res) => {
+router.delete(`/:id_barang`, tesjwt.verifyToken, async (req, res) => {
     var id_barang = req.params.id_barang
     try {
         dbConfig.query(`DELETE FROM ${table} where id_barang="${id_barang}"`, (err, result) => {
