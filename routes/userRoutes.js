@@ -5,7 +5,7 @@ const dbConfig = require('../dbConfig');
 const router = express.Router()
 
 const table = "users" // ubah tabel jika perlu
-const fields = ["id_user", "username_user", "email_user", "role", "photo_user", "password_user"]
+const fields = ["id_user", "username_user", "email_user", "photo_user", "password_user"]
 
 // get all
 router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
@@ -25,10 +25,15 @@ router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
 });
 
 // get by id
-router.get(`/:id_user`, tesjwt.verifyToken, async (req, res) => {
-    var id_user = req.params.id_user
+router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
+    
     try {
-        dbConfig.query(`SELECT * FROM ${table} where id_user="${id_user}"`, (err, result) => {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        var id_user = user_data["id_user"]
+
+        dbConfig.query(`SELECT * FROM ${table} 
+        WHERE id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
@@ -44,19 +49,24 @@ router.get(`/:id_user`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
-// add item
-router.post(`/`, tesjwt.verifyToken, async (req, res) => {
+// add user
+router.post(`/add`, async (req, res) => {
     try {
         var id_user = req.query.id_user
         var username_user = req.query.username_user
         var email_user = req.query.email_user
-        var role = req.query.role
         var photo_user = req.query.photo_user
         var password_user = req.query.password_user
 
-        var values = [id_user, username_user, email_user, role, photo_user, password_user].join(",")
+        var values = [id_user, username_user, email_user, photo_user, password_user]
+        var SET = []
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES (${values})`, (err, result) => {
+        for (const index in fields) {
+            SET.push(`${fields[index]}='${values[index]}'`)
+        }
+
+        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
+        VALUES (${SET.join(",")})`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
@@ -68,26 +78,29 @@ router.post(`/`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
-// update item
-router.put(`/:id_user`, tesjwt.verifyToken, async (req, res) => {
+// update user
+router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
     try {
-        var id_user = req.params.id_user
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
+        var id_user = user_data["id_user"]
         var username_user = req.query.username_user
         var email_user = req.query.email_user
-        var role = req.query.role
         var photo_user = req.query.photo_user
         var password_user = req.query.password_user
 
-        var values = [id_user, username_user, email_user, role, photo_user, password_user]
+        var values = [id_user, username_user, email_user, photo_user, password_user]
         var SET = []
 
         for (const index in fields) {
             if (fields[index] != "id_user") {
-                SET.push(`${fields[index]}=${values[index]}`)
+                SET.push(`${fields[index]}='${values[index]}'`)
             }
         }
 
-        dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} WHERE id_user="${id_user}"`, (err, result) => {
+        dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
+        WHERE id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
@@ -100,7 +113,7 @@ router.put(`/:id_user`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // delete user
-router.delete(`/:id`, tesjwt.verifyToken, async (req, res) => {
+router.delete(`/delete/:id_user`, tesjwt.verifyTokenAdmin, async (req, res) => {
     var id_user = req.params.id_user
     try {
         dbConfig.query(`DELETE FROM ${table} where id_user="${id_user}"`, (err, result) => {

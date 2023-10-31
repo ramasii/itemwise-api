@@ -8,7 +8,7 @@ const table = "inventory_user" // ubah tabel jika perlu
 const fields = ["id_inventory", "id_user", "nama_inventory"]
 
 // get all
-router.get(`/`, tesjwt.verifyToken, async (req, res) => {
+router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
         dbConfig.query(`SELECT * FROM ${table}
         INNER JOIN users ON ${table}.id_user = users.id_user`, (err, result) => {
@@ -27,12 +27,18 @@ router.get(`/`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // get by id_inventory
-router.get(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
+router.get(`/byId/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
     var id_inventory = req.params.id_inventory
+
+    // ambil data user dari token, memastikan data ini diakses oleh pemilik
+    var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+    var id_user = user_data[0]["id_user"]
+
     try {
         dbConfig.query(`SELECT * FROM ${table} 
         INNER JOIN users ON ${table}.id_user = users.id_user
-        WHERE id_inventory="${id_inventory}"`, (err, result) => {
+        WHERE id_inventory="${id_inventory}"
+        && ${table}.id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
@@ -49,8 +55,13 @@ router.get(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // get by id_user
-router.get(`/byUser/:id_user`, tesjwt.verifyToken, async (req, res) => {
-    var id_user = req.params.id_user
+// ambil data inventory berdasarkan id_user menggunakan token, jadi satu token untuk satu user
+router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
+
+    // ambil data user dari token, memastikan data ini diakses oleh pemilik
+    var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+    var id_user = user_data["id_user"]
+
     try {
         dbConfig.query(`SELECT * FROM ${table} 
         INNER JOIN users ON ${table}.id_user=users.id_user 
@@ -70,16 +81,25 @@ router.get(`/byUser/:id_user`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
-// add item
-router.post(`/`, tesjwt.verifyToken, async (req, res) => {
+// add inventory
+router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
     try {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
         var id_inventory = req.query.id_inventory
-        var id_user = req.query.id_user
+        var id_user = user_data["id_user"]
         var nama_inventory = req.query.nama_inventory
 
-        var values = [id_inventory, id_user, nama_inventory].join(",")
+        var values = [id_inventory, id_user, nama_inventory]
+        var SET = []
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES (${values})`, (err, result) => {
+        for (const index in fields) {
+            SET.push(`${fields[index]}='${values[index]}'`)
+        }
+
+        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
+        VALUES (${SET.join(",")})`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
@@ -91,11 +111,14 @@ router.post(`/`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
-// update item
-router.put(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
+// update inventory
+router.put(`/update/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
     try {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
         var id_inventory = req.params.id_inventory
-        var id_user = req.query.id_user
+        var id_user = user_data["id_user"]
         var nama_inventory = req.query.nama_inventory
 
         var values = [id_inventory, id_user, nama_inventory]
@@ -103,11 +126,13 @@ router.put(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
 
         for (const index in fields) {
             if (fields[index] != "id_inventory") {
-                SET.push(`${fields[index]}=${values[index]}`)
+                SET.push(`${fields[index]}='${values[index]}'`)
             }
         }
 
-        dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} WHERE id_inventory="${id_inventory}"`, (err, result) => {
+        dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
+        WHERE id_inventory="${id_inventory}" 
+        && ${table}.id_user='${id_user}'`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
@@ -120,10 +145,16 @@ router.put(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // delete
-router.delete(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
+router.delete(`/delete/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
     var id_inventory = req.params.id_inventory
+    const token = req.headers['authorization'];
     try {
-        dbConfig.query(`DELETE FROM ${table} where id_inventory="${id_inventory}"`, (err, result) => {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
+        dbConfig.query(`DELETE FROM ${table} 
+        WHERE id_inventory="${id_inventory}" 
+        && ${table}.id_user='${user_data["id_user"]}'`, (err, result) => {
             if (err) return;
 
             if (result != "") {
@@ -140,3 +171,6 @@ router.delete(`/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
 });
 
 module.exports = router
+
+// TODO: hmm... kyknya tiap kali request atau akses yang menggunakan parameter id barang/user/inventory itu...
+// harus dicek apakah dia pemilik dari data ini

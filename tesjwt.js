@@ -2,35 +2,44 @@ const jwt = require('jsonwebtoken');
 const dbConfig = require('./dbConfig');
 const secretKey = 'sungguhAmatSangatRahasiajoer03J)(JEr8uejr03rjjergpksd[gpsg56834r63q32433u89rje'; // Ganti dengan kunci rahasia Anda
 
-function loadToken(email_user, password_user) {
-    // Membuat token
-    const payload = { email: email_user, pass: password_user };
-    const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
-    return token
-}
-
-function getUserData(email_user) {
+function getUserData(email_user, password_user) {
     return new Promise((resolve, reject) => {
         try {
-            dbConfig.query(`SELECT * FROM users WHERE email_user='${email_user}'`, (err, result) => {
+            dbConfig.query(`SELECT * FROM users 
+            WHERE email_user='${email_user}' 
+            && password_user='${password_user}'`, (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(result);
                 }
             });
+
         } catch (error) {
             reject(error);
         }
     });
 }
 
-const verifyToken = (req, res, next) => {
+async function getUserDataByAuth(token){
+    // ambil data user dari token, memastikan data ini diakses oleh pemilik
+    var decoded = jwt.decode(token)
+    var user_data = await getUserData(decoded["email"], decoded["pass"])
+    .then(result => {
+        return result
+    }).catch(error => {
+            console.error(error);
+            return []
+        });
+    return user_data[0]
+}
+
+const verifyToken = async (req, res, next) => {
     const token = req.headers['authorization'];
 
     if (!token) return res.status(403).send('token not found');
 
-    jwt.verify(token, secretKey, (err, decoded) => {
+    jwt.verify(token, secretKey, async (err, decoded) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
                 return res.status(401).send('token expired');
@@ -38,7 +47,7 @@ const verifyToken = (req, res, next) => {
             return res.status(403).send('token invalid');
         }
         req.user = decoded;
-        console.log(decoded);
+        // console.log(decoded);
         next();
     });
 };
@@ -57,7 +66,7 @@ const verifyTokenAdmin = async (req, res, next) => {
         }
         
 
-        const user_data = await getUserData(decoded["email"])
+        const user_data = await getUserData(decoded["email"], decoded["pass"])
         .then(result => {
             // console.log(result)
             return result
@@ -68,7 +77,7 @@ const verifyTokenAdmin = async (req, res, next) => {
         });
         const role = user_data[0]["role"]
         if (role != "admin"){
-            return res.status(403).send("waduh, anda bukan admin")
+            return res.status(403).send("<h1>🛑 WOI 🛑</h1>waduh, anda bukan admin😂")
         }
 
         req.user = decoded;
@@ -94,4 +103,4 @@ const verifyTokenAdmin = async (req, res, next) => {
     
 } */
 
-module.exports = { verifyToken, loadToken, verifyTokenAdmin }
+module.exports = { verifyToken, verifyTokenAdmin, getUserData, jwt, secretKey,getUserDataByAuth }
