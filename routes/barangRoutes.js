@@ -132,7 +132,14 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         var SET = []
 
         for (const index in fields) {
-            SET.push(`${fields[index]}='${values[index]}'`)
+            // jika nilainya bukan numerik
+            if(isNaN(values[index])){
+                SET.push(`${fields[index]}='${values[index]}'`)
+            }
+            // jika nilainya numerik
+            else {
+                SET.push(`${fields[index]}=${values[index]}`)
+            }
         }
 
         dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
@@ -171,8 +178,13 @@ router.put(`/update/:id_barang`, tesjwt.verifyToken, async (req, res) => {
         var SET = []
 
         for (const index in fields) {
-            if (fields[index] != "id_barang") {
+            // jika nilainya bukan numerik
+            if(isNaN(values[index])){
                 SET.push(`${fields[index]}='${values[index]}'`)
+            }
+            // jika nilainya numerik
+            else {
+                SET.push(`${fields[index]}=${values[index]}`)
             }
         }
 
