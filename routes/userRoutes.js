@@ -28,7 +28,7 @@ router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
 router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
     
     try {
-        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        // ambil data user dari token
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
         var id_user = user_data["id_user"]
 
@@ -49,6 +49,36 @@ router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
+// get by email
+router.get(`/byEmail`, async (req, res) => {    
+    try {
+        var email_user = req.query['email_user']
+        var password_user = req.query['password_user']
+        console.log(`${email_user}`);
+
+        dbConfig.query(`SELECT * FROM ${table} 
+        WHERE email_user="${email_user}"`, (err, result) => {
+            if (err) return;
+
+            if (result != "") {
+                // res.status(200).send(result);
+                if(password_user == result[0]['password_user']){
+                    // return result
+                    res.status(200).send({"msg":"success","result":result[0]})
+                }else{
+                    res.status(406).send({"msg":"wrong password"})
+                }
+            } else {
+                res.status(202).send({"msg":"user not found"})
+            }
+            dbConfig.end;
+        });
+    } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        res.status(500).send("Terjadi kesalahan pada server");
+    }
+});
+
 // add user
 router.post(`/add`, async (req, res) => {
     try {
@@ -58,15 +88,11 @@ router.post(`/add`, async (req, res) => {
         var photo_user = req.query.photo_user
         var password_user = req.query.password_user
 
-        var values = [id_user, username_user, email_user, photo_user, password_user]
-        var SET = []
+        var values = [`${id_user}`, `${username_user}`, `${email_user}`, `${photo_user}`, `${password_user}`]
 
-        for (const index in fields) {
-            SET.push(`${fields[index]}='${values[index]}'`)
-        }
+        console.log(`INSERT INTO ${table} (${fields.join(",")}) VALUES (${values.join(",")})`);
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
-        VALUES (${SET.join(",")})`, (err, result) => {
+        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${username_user}","${email_user}","${photo_user}","${password_user}")`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
