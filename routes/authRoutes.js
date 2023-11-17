@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const secretKey = 'sungguhAmatSangatRahasiajoer03J)(JEr8uejr03rjjergpksd[gpsg56834r63q32433u89rje';
 
 router.get('/', async (req, res) => {
+    console.log("auth baru");
     try {
         var email_user = req.query.email_user
         var password_user = req.query.password_user
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
         } else {
             const payload = { email: email_user, pass: password_user };
             const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
-            res.send({ "token": token })
+            res.status(200).send({ "msg":"success","token": token })
         }
     } catch (error) {
         console.error(error);

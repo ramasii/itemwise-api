@@ -83,6 +83,7 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
 
 // add inventory
 router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
+    console.log("POST ADD");
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
@@ -95,7 +96,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         var SET = []
 
         for (const index in fields) {
-            SET.push(`${fields[index]}='${values[index]}'`)
+            SET.push(`"${values[index]}"`)
         }
 
         dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
