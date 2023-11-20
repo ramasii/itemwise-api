@@ -83,10 +83,11 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
 
 // add inventory
 router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
-    console.log("POST ADD");
+    console.log("POST inv");
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        console.log(user_data);
 
         var id_inventory = req.query.id_inventory
         var id_user = user_data["id_user"]
@@ -94,18 +95,56 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
 
         var values = [id_inventory, id_user, nama_inventory]
         var SET = []
+        var valueAdd = []
 
-        for (const index in fields) {
-            SET.push(`"${values[index]}"`)
+        for (const index in fields|| values[index] == '') {
+            SET.push(`${fields[index]}="${values[index]}"`)
+        }
+        for (const index in fields|| values[index] == '') {
+            valueAdd.push(`"${values[index]}`)
         }
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
-        VALUES (${SET.join(",")})`, (err, result) => {
+        // Lakukan query untuk mengecek apakah id_inventory sudah ada di database
+        dbConfig.query(`SELECT * FROM ${table} WHERE id_inventory = '${id_inventory}'`, (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Internal Server Error');
+            }
+
+            if (result.length > 0) {
+                console.log("| add inv\n");
+                // Jika id_inventory sudah ada, lakukan UPDATE
+                dbConfig.query(`UPDATE ${table} SET ${SET.join(',')} WHERE id_inventory = '${id_inventory}'`, (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send('Internal Server Error');
+                    }
+
+                    res.status(200).send(result);
+                    // dbConfig.end();
+                });
+            } else {
+                console.log("| edit inv\n");
+                // Jika id_inventory belum ada, lakukan INSERT
+                dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES (${valueAdd.join(',')})`, (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send('Internal Server Error');
+                    }
+
+                    res.status(200).send(result);
+                    // dbConfig.end();
+                });
+            }
+        });
+
+        /* dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
+        VALUES (${valueAdd.join(",")})`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
             dbConfig.end;
-        });
+        }); */
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
         res.status(500).send("Terjadi kesalahan pada server: " + error);

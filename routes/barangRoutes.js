@@ -30,11 +30,11 @@ router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
 // get by id_barang
 router.get(`/byId/:id_barang`, tesjwt.verifyToken, async (req, res) => {
     var id_barang = req.params.id_barang
-    
+
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
-        
+
         dbConfig.query(`SELECT * FROM ${table} 
             INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
             INNER JOIN users ON ${table}.id_user = users.id_user
@@ -111,9 +111,11 @@ router.get(`/byInventory/:id_inventory`, tesjwt.verifyToken, async (req, res) =>
 
 // add item
 router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
+    console.log("POST brg");
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        console.log(user_data);
 
         var id_barang = req.query.id_barang
         var id_user = user_data["id_user"]
@@ -130,10 +132,11 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
 
         var values = [id_barang, id_user, id_inventory, kode_barang, nama_barang, catatan, stok_barang, harga_beli, harga_jual, photo_barang, added, edited]
         var SET = []
+        var valueAdd = []
 
         for (const index in fields) {
             // jika nilainya bukan numerik
-            if(isNaN(values[index])){
+            if (isNaN(values[index]) || values[index] == '') {
                 SET.push(`${fields[index]}='${values[index]}'`)
             }
             // jika nilainya numerik
@@ -142,12 +145,49 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
             }
         }
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) 
-        VALUES (${SET.join(",")})`, (err, result) => {
-            if (err) return;
+        for (const index in fields) {
+            // jika nilainya bukan numerik
+            if (isNaN(values[index]) || values[index] == '') {
+                valueAdd.push(`'${values[index]}'`)
+            }
+            // jika nilainya numerik
+            else {
+                valueAdd.push(`${values[index]}`)
+            }
+        }
 
-            res.status(200).send(result)
-            dbConfig.end;
+        // Lakukan query untuk mengecek apakah id_barang sudah ada di database
+        dbConfig.query(`SELECT * FROM ${table} WHERE id_barang = '${id_barang}'`, (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Internal Server Error');
+            }
+
+            if (result.length > 0) {
+                console.log("| add brg\n");
+                // Jika id_barang sudah ada, lakukan UPDATE
+                dbConfig.query(`UPDATE ${table} SET ${SET.join(',')} WHERE id_barang = '${id_barang}'`, (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send('Internal Server Error');
+                    }
+
+                    res.status(200).send(result);
+                    // dbConfig.end();
+                });
+            } else {
+                console.log("| edit brg\n");
+                // Jika id_barang belum ada, lakukan INSERT
+                dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES (${valueAdd.join(',')})`, (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send('Internal Server Error');
+                    }
+
+                    res.status(200).send(result);
+                    // dbConfig.end();
+                });
+            }
         });
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
@@ -179,7 +219,7 @@ router.put(`/update/:id_barang`, tesjwt.verifyToken, async (req, res) => {
 
         for (const index in fields) {
             // jika nilainya bukan numerik
-            if(isNaN(values[index])){
+            if (isNaN(values[index])) {
                 SET.push(`${fields[index]}='${values[index]}'`)
             }
             // jika nilainya numerik
