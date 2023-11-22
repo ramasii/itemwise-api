@@ -63,19 +63,20 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
     var id_user = user_data["id_user"]
 
     try {
-        dbConfig.query(`SELECT * FROM ${table} 
-        WHERE ${table}.id_user="${id_user}"`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table} WHERE id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
                 res.send(result);
             } else {
+                console.log(result);
+                console.log(id_user);
                 res.send(`data tidak ditemukan: ${id_user}`)
             }
             dbConfig.end;
         });
     } catch (error) {
-        console.error("Terjadi kesalahan:", error);
+        console.log("Terjadi kesalahan:", error);
         res.status(500).send("Terjadi kesalahan pada server");
     }
 });
@@ -106,6 +107,64 @@ router.get(`/byInventory/:id_inventory`, tesjwt.verifyToken, async (req, res) =>
         res.status(500).send("Terjadi kesalahan pada server");
     }
 });
+
+// add item bulk
+router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
+    console.log("POST BULK brg");
+    try {
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        var items = JSON.parse(req.query.items)
+        console.log(user_data);
+
+        var valueAdd = []
+
+        for (index in items) {
+            var item = items[index]
+
+            var id_barang = item['id_barang']
+            var id_user = user_data["id_user"]
+            console.log(id_user);
+            console.log(item['id_inventory']);
+            var id_inventory = item['id_inventory'] == null ? 'null' : `'${item['id_inventory']}'`
+            var kode_barang = item['kode_barang']
+            var nama_barang = item['nama_barang']
+            var catatan = item['catatan']
+            var stok_barang = item['stok_barang']
+            var harga_beli = item['harga_beli']
+            var harga_jual = item['harga_jual']
+            var photo_barang = item['photo_barang']
+            var added = item['added']
+            var edited = item['edited']
+
+            valueAdd.push(`('${id_barang}','${id_user}',${id_inventory},'${kode_barang}','${nama_barang}','${catatan}','${stok_barang}','${harga_beli}','${harga_jual}','${photo_barang}','${added}','${edited}')`)
+        }
+        dbConfig.query(`DELETE FROM ${table} WHERE id_user='${id_user}';`,async (err,result)=>{
+            if(err){
+                console.log(err);
+                return res.status(500).send("internal server err")
+            }
+            else if(result){
+                console.log(result);
+            }
+        })
+        // TODO: buatkan delay
+        setTimeout(() => {
+            dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ${valueAdd.join(",")};`, async (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).send("internal server err");
+                } else if (result) {
+                    return res.send(result);
+                }
+            });
+        }, 500); 
+        console.log(`INSERT INTO ${table} (${fields.join(',')}) VALUES ${valueAdd.join(",")};`);
+        // res.send(valueAdd)
+        console.log("DONE POST BULK brg");
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 // add item
 router.post(`/add`, tesjwt.verifyToken, async (req, res) => {

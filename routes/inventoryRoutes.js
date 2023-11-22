@@ -80,6 +80,51 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
     }
 });
 
+// post inventory bulk
+router.post(`/addBulk`, tesjwt.verifyToken, async (req, res)=>{
+    console.log("POST BULK inv");
+    try {
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        var invs = JSON.parse(req.query.invs)
+        console.log(user_data);
+
+        var valueAdd = []
+
+        for (index in invs){
+            var inv = invs[index]
+
+            var id_inventory = inv['id_inventory']
+            var id_user = inv['id_user']
+            var nama_inventory = inv['nama_inventory']
+
+            valueAdd.push(`('${id_inventory}','${id_user}','${nama_inventory}')`)
+        }
+
+        dbConfig.query(`DELETE FROM ${table} WHERE id_user='${id_user}';`,async(err,result)=>{
+            if(err){
+                console.log(err);
+                return res.status(500).send("internal server err")
+            }
+        })
+        setTimeout(() => {
+            dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ${valueAdd.join(",")};`,async(err,result)=>{
+                if(err){
+                    console.log(err);
+                    return res.status(500).send("internal server err")
+                }
+    
+                else if (result) {
+                    return res.send(result)
+                }
+            })
+        }, 500);
+        // res.send(valueAdd)
+        console.log("DONE POST BULK inv");
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 // add inventory
 router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
     console.log("POST inv");
