@@ -64,7 +64,6 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
 
     try {
         dbConfig.query(`SELECT * FROM ${table} 
-        INNER JOIN users ON ${table}.id_user=users.id_user 
         WHERE ${table}.id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
@@ -101,8 +100,9 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
             SET.push(`${fields[index]}="${values[index]}"`)
         }
         for (const index in fields|| values[index] == '') {
-            valueAdd.push(`"${values[index]}`)
+            valueAdd.push(`"${values[index]}"`)
         }
+        console.log(valueAdd);
 
         // Lakukan query untuk mengecek apakah id_inventory sudah ada di database
         dbConfig.query(`SELECT * FROM ${table} WHERE id_inventory = '${id_inventory}'`, (err, result) => {

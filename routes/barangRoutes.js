@@ -64,8 +64,6 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
 
     try {
         dbConfig.query(`SELECT * FROM ${table} 
-        INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
-        INNER JOIN users ON ${table}.id_user = users.id_user
         WHERE ${table}.id_user="${id_user}"`, (err, result) => {
             if (err) return;
 
@@ -136,7 +134,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
 
         for (const index in fields) {
             // jika nilainya bukan numerik
-            if (isNaN(values[index]) || values[index] == '') {
+            if ((isNaN(values[index]) && values[index] != 'null') || values[index] == '') {
                 SET.push(`${fields[index]}='${values[index]}'`)
             }
             // jika nilainya numerik
@@ -146,8 +144,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         }
 
         for (const index in fields) {
-            // jika nilainya bukan numerik
-            if (isNaN(values[index]) || values[index] == '') {
+            if ((isNaN(values[index]) && values[index] != 'null') || values[index] == '') {
                 valueAdd.push(`'${values[index]}'`)
             }
             // jika nilainya numerik
