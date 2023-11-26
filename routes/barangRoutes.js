@@ -10,9 +10,7 @@ const fields = ["id_barang", "id_user", "id_inventory", "kode_barang", "nama_bar
 // get all
 router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
-        dbConfig.query(`SELECT * FROM ${table}
-        INNER JOIN inventory_user ON ${table}.id_inventory=inventory_user.id_inventory 
-        INNER JOIN users ON ${table}.id_user = users.id_user`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table}`, (err, result) => {
             if (err) {
                 res.status(500).send("terjadi eror di server");
                 return;
@@ -23,7 +21,6 @@ router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send("Terjadi kesalahan pada server");
-
     }
 });
 
@@ -57,10 +54,12 @@ router.get(`/byId/:id_barang`, tesjwt.verifyToken, async (req, res) => {
 
 // get by id_user
 router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
+    console.log("get barang by user");
 
     // ambil data user dari token, memastikan data ini diakses oleh pemilik
     var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
     var id_user = user_data["id_user"]
+    console.log(user_data);
 
     try {
         dbConfig.query(`SELECT * FROM ${table} WHERE id_user="${id_user}"`, (err, result) => {
@@ -69,8 +68,6 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                console.log(result);
-                console.log(id_user);
                 res.send(`data tidak ditemukan: ${id_user}`)
             }
             dbConfig.end;
@@ -123,8 +120,6 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
 
             var id_barang = item['id_barang']
             var id_user = user_data["id_user"]
-            console.log(id_user);
-            console.log(item['id_inventory']);
             var id_inventory = item['id_inventory'] == null ? 'null' : `'${item['id_inventory']}'`
             var kode_barang = item['kode_barang']
             var nama_barang = item['nama_barang']
@@ -133,6 +128,7 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
             var harga_beli = item['harga_beli']
             var harga_jual = item['harga_jual']
             var photo_barang = item['photo_barang']
+            console.log(photo_barang);
             var added = item['added']
             var edited = item['edited']
 
@@ -158,7 +154,6 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
                 }
             });
         }, 500); 
-        console.log(`INSERT INTO ${table} (${fields.join(',')}) VALUES ${valueAdd.join(",")};`);
         // res.send(valueAdd)
         console.log("DONE POST BULK brg");
     } catch (error) {

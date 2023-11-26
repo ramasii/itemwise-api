@@ -107,23 +107,28 @@ router.post(`/add`, async (req, res) => {
 // update user
 router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
     try {
+        console.log("update userapi");
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
-
-        var id_user = user_data["id_user"]
+        
+        var id_user = req.query.id_user
         var username_user = req.query.username_user
         var email_user = req.query.email_user
         var photo_user = req.query.photo_user
         var password_user = req.query.password_user
-
+        var role = req.query.role
+        
         var values = [id_user, username_user, email_user, photo_user, password_user]
         var SET = []
-
+        
         for (const index in fields) {
             if (fields[index] != "id_user") {
                 SET.push(`${fields[index]}='${values[index]}'`)
             }
         }
+        SET.push(`role='${role}'`)
+        console.log(`UPDATE ${table} SET ${SET.join(",")} 
+        WHERE id_user="${id_user}"`);
 
         dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
         WHERE id_user="${id_user}"`, (err, result) => {

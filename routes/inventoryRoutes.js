@@ -10,8 +10,7 @@ const fields = ["id_inventory", "id_user", "nama_inventory"]
 // get all
 router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
-        dbConfig.query(`SELECT * FROM ${table}
-        INNER JOIN users ON ${table}.id_user = users.id_user`, (err, result) => {
+        dbConfig.query(`SELECT * FROM ${table}`, (err, result) => {
             if (err) {
                 res.status(500).send("terjadi eror di server");
                 return;
@@ -197,13 +196,13 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // update inventory
-router.put(`/update/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
+router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
 
-        var id_inventory = req.params.id_inventory
-        var id_user = user_data["id_user"]
+        var id_inventory = req.query.id_inventory
+        var id_user = req.query.id_user
         var nama_inventory = req.query.nama_inventory
 
         var values = [id_inventory, id_user, nama_inventory]
@@ -216,8 +215,7 @@ router.put(`/update/:id_inventory`, tesjwt.verifyToken, async (req, res) => {
         }
 
         dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
-        WHERE id_inventory="${id_inventory}" 
-        && ${table}.id_user='${id_user}'`, (err, result) => {
+        WHERE id_inventory="${id_inventory}"`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
