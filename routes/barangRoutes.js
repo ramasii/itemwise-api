@@ -68,7 +68,7 @@ router.get(`/byUser`, tesjwt.verifyToken, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                res.send(`data tidak ditemukan: ${id_user}`)
+                res.send([])
             }
             dbConfig.end;
         });
@@ -247,46 +247,78 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // update item
-router.put(`/update/:id_barang`, tesjwt.verifyToken, async (req, res) => {
+router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
 
-        var id_barang = req.params.id_barang
-        var id_user = user_data["id_user"]
-        var id_inventory = req.query.id_inventory
-        var kode_barang = req.query.kode_barang
-        var nama_barang = req.query.nama_barang
-        var catatan = req.query.catatan
+        var id_barang = `${req.query.id_barang}`
+        var id_user = req.query.id_user == undefined ? `${user_data['id_user']}` : `${req.query.id_user}`
+        var id_inventory = `${req.query.id_inventory}`
+        var kode_barang = `${req.query.kode_barang}`
+        var nama_barang = `${req.query.nama_barang}`
+        var catatan = `${req.query.catatan}`
         var stok_barang = req.query.stok_barang
         var harga_beli = req.query.harga_beli
         var harga_jual = req.query.harga_jual
-        var photo_barang = req.query.photo_barang
-        var added = req.query.added
-        var edited = req.query.edited
+        var photo_barang = `${req.query.photo_barang}` == '' ? "''" :`${req.query.photo_barang}`
+        var added = `${req.query.added}`
+        var edited = `${req.query.edited}`
 
-        var values = [id_barang, id_user, id_inventory, kode_barang, nama_barang, catatan, stok_barang, harga_beli, harga_jual, photo_barang, added, edited]
-        var SET = []
+        // UPDATE data_barang SET id_barang='${id_barang}',
+        // id_user='${id_user}',
+        // id_inventory='${id_inventory}',
+        // kode_barang='${kode_barang}',
+        // nama_barang='${nama_barang}',
+        // catatan='${catatan_barang}',
+        // stok_barang=${stok_barang},
+        // harga_beli=${harga_beli},
+        // harga_jual=${harga_jual},
+        // photo_barang='${photo_barang}',
+        // added='${added}',
+        // edited='${edited}'
+        // WHERE id_barang="${id_barang}"
 
-        for (const index in fields) {
-            // jika nilainya bukan numerik
-            if (isNaN(values[index])) {
-                SET.push(`${fields[index]}='${values[index]}'`)
-            }
-            // jika nilainya numerik
-            else {
-                SET.push(`${fields[index]}=${values[index]}`)
-            }
-        }
+        console.log(`UPDATE data_barang SET id_barang='${id_barang}',
+        id_user='${id_user}',
+        id_inventory=${id_inventory},
+        kode_barang='${kode_barang}',
+        nama_barang='${nama_barang}',
+        catatan='${catatan}',
+        stok_barang=${stok_barang},
+        harga_beli=${harga_beli},
+        harga_jual=${harga_jual},
+        photo_barang=${photo_barang},
+        added='${added}',
+        edited='${edited}'
+        WHERE id_barang="${id_barang}"`);
 
-        dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
-        WHERE id_barang="${id_barang}"
-        && ${table}.id_user='${id_user}'`, (err, result) => {
+        dbConfig.query(`UPDATE data_barang SET id_barang='${id_barang}',
+        id_user='${id_user}',
+        id_inventory=${id_inventory},
+        kode_barang='${kode_barang}',
+        nama_barang='${nama_barang}',
+        catatan='${catatan}',
+        stok_barang=${stok_barang},
+        harga_beli=${harga_beli},
+        harga_jual=${harga_jual},
+        photo_barang=${photo_barang},
+        added='${added}',
+        edited='${edited}'
+        WHERE id_barang="${id_barang}"`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)
             dbConfig.end;
         });
+        // dbConfig.query(`UPDATE ${table} SET ${SET.join(",")} 
+        // WHERE id_barang="${id_barang}"
+        // && ${table}.id_user='${id_user}'`, (err, result) => {
+        //     if (err) return;
+
+        //     res.status(200).send(result)
+        //     dbConfig.end;
+        // });
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
         res.status(500).send("Terjadi kesalahan pada server: " + error);
