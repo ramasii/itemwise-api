@@ -326,16 +326,14 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // delete
-router.delete(`/delete/:id_barang`, tesjwt.verifyToken, async (req, res) => {
-    var id_barang = req.params.id_barang
+router.delete(`/delete`, tesjwt.verifyToken, async (req, res) => {
+    var id_barang = req.query.id_barang
 
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
 
-        dbConfig.query(`DELETE FROM ${table} 
-        WHERE id_barang="${id_barang}"
-        && ${table}.id_user='${user_data["id_user"]}'`, (err, result) => {
+        dbConfig.query(`DELETE FROM ${table} WHERE id_barang="${id_barang}"`, (err, result) => {
             if (err) return;
 
             if (result != "") {
