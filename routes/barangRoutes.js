@@ -254,7 +254,7 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 
         var id_barang = `${req.query.id_barang}`
         var id_user = req.query.id_user == undefined ? `${user_data['id_user']}` : `${req.query.id_user}`
-        var id_inventory = `${req.query.id_inventory}`
+        var id_inventory = req.query.id_inventory != 'null' ? `'${req.query.id_inventory}'` : `null`
         var kode_barang = `${req.query.kode_barang}`
         var nama_barang = `${req.query.nama_barang}`
         var catatan = `${req.query.catatan}`
@@ -279,9 +279,9 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         // edited='${edited}'
         // WHERE id_barang="${id_barang}"
 
-        console.log(`UPDATE data_barang SET id_barang='${id_barang}',
+        console.log(`UPDATE data_barang SET 
         id_user='${id_user}',
-        id_inventory=${id_inventory},
+        id_inventory='${id_inventory}',
         kode_barang='${kode_barang}',
         nama_barang='${nama_barang}',
         catatan='${catatan}',
@@ -293,7 +293,7 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         edited='${edited}'
         WHERE id_barang="${id_barang}"`);
 
-        dbConfig.query(`UPDATE data_barang SET id_barang='${id_barang}',
+        dbConfig.query(`UPDATE data_barang SET 
         id_user='${id_user}',
         id_inventory=${id_inventory},
         kode_barang='${kode_barang}',

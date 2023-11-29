@@ -39,7 +39,7 @@ router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                res.send(`data tidak ditemukan: ${id_user}`)
+                res.send([])
             }
             dbConfig.end;
         });
