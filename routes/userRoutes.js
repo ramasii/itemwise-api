@@ -39,7 +39,7 @@ router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                res.send(`data tidak ditemukan: ${id_user}`)
+                res.send([])
             }
             dbConfig.end;
         });
@@ -144,8 +144,8 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // delete user
-router.delete(`/delete/:id_user`, tesjwt.verifyTokenAdmin, async (req, res) => {
-    var id_user = req.params.id_user
+router.delete(`/delete`, tesjwt.verifyTokenAdmin, async (req, res) => {
+    var id_user = req.query.id_user
     try {
         dbConfig.query(`DELETE FROM ${table} where id_user="${id_user}"`, (err, result) => {
             if (err) return;
@@ -153,13 +153,13 @@ router.delete(`/delete/:id_user`, tesjwt.verifyTokenAdmin, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                res.send(`data tidak ditemukan: ${id_user}`)
+                res.send({"msg":`data tidak ditemukan: ${id_user}`})
             }
             dbConfig.end;
         });
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
-        res.status(500).send("Terjadi kesalahan pada server");
+        res.status(500).send({"msg":"Terjadi kesalahan pada server"});
     }
 });
 
