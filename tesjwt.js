@@ -6,8 +6,7 @@ function getUserData(email_user, password_user) {
     return new Promise((resolve, reject) => {
         try {
             dbConfig.query(`SELECT * FROM users 
-            WHERE email_user='${email_user}' 
-            && password_user='${password_user}'`, (err, result) => {
+            WHERE email_user='${email_user}'`, (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -77,6 +76,7 @@ const verifyTokenAdmin = async (req, res, next) => {
         });
         const role = user_data[0]["role"]
         if (role != "admin"){
+            console.log(user_data[0]);
             return res.status(403).send("<h1>🛑 WOI 🛑</h1>waduh, anda bukan admin😂")
         }
 

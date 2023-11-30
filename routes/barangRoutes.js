@@ -170,7 +170,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         console.log(user_data);
 
         var id_barang = req.query.id_barang
-        var id_user = user_data["id_user"]
+        var id_user = req.query.id_user
         var id_inventory = req.query.id_inventory
         var kode_barang = req.query.kode_barang
         var nama_barang = req.query.nama_barang
@@ -228,8 +228,19 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
                 });
             } else {
                 console.log("| edit brg\n");
+                // jika id_user/id_inventory != null
+                if(id_user == 'null'){
+                    id_user = null
+                }else{
+                    id_user = `'${id_user}'`
+                }
+                if(id_inventory == 'null'){
+                    id_inventory = null
+                }else{
+                    id_inventory = `'${id_inventory}'`
+                }
                 // Jika id_barang belum ada, lakukan INSERT
-                dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES (${valueAdd.join(',')})`, (err, result) => {
+                dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_barang}',${id_user},${id_inventory},'${kode_barang}','${nama_barang}','${catatan}',${stok_barang},${harga_beli},${harga_jual},'${photo_barang}','${added}','${edited}')`, (err, result) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).send('Internal Server Error');
