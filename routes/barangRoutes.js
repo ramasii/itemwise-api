@@ -120,7 +120,7 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
 
             var id_barang = item['id_barang']
             var id_user = user_data["id_user"]
-            var id_inventory = item['id_inventory'] == null ? 'null' : `'${item['id_inventory']}'`
+            var id_inventory = item['id_inventory'] == 'null' ? 'null' : `'${item['id_inventory']}'`
             var kode_barang = item['kode_barang']
             var nama_barang = item['nama_barang']
             var catatan = item['catatan']
@@ -143,7 +143,7 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
                 console.log(result);
             }
         })
-        // TODO: buatkan delay
+        
         setTimeout(() => {
             dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ${valueAdd.join(",")};`, async (err, result) => {
                 if (err) {
@@ -170,8 +170,8 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         console.log(user_data);
 
         var id_barang = req.query.id_barang
-        var id_user = req.query.id_user
-        var id_inventory = req.query.id_inventory
+        var id_user = req.query.id_user == 'null' ? 'null' : `'${req.query.id_user}'`
+        var id_inventory = req.query.id_inventory == 'null' ? 'null' : `'${req.query.id_inventory}'`
         var kode_barang = req.query.kode_barang
         var nama_barang = req.query.nama_barang
         var catatan = req.query.catatan
@@ -182,75 +182,27 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         var added = req.query.added
         var edited = req.query.edited
 
-        var values = [id_barang, id_user, id_inventory, kode_barang, nama_barang, catatan, stok_barang, harga_beli, harga_jual, photo_barang, added, edited]
-        var SET = []
-        var valueAdd = []
-
-        for (const index in fields) {
-            // jika nilainya bukan numerik
-            if ((isNaN(values[index]) && values[index] != 'null') || values[index] == '') {
-                SET.push(`${fields[index]}='${values[index]}'`)
+        // yang pertama hapus barang yang ada, lalu tambahkan (replace data)
+        dbConfig.query(`DELETE FROM ${table} WHERE id_barang='${id_barang}';`,async (err,result)=>{
+            if(err){
+                console.log(err);
+                return res.status(500).send({"msg":"server err"})
             }
-            // jika nilainya numerik
-            else {
-                SET.push(`${fields[index]}=${values[index]}`)
+            else if(result){
+                console.log(result);
             }
-        }
+        })
 
-        for (const index in fields) {
-            if ((isNaN(values[index]) && values[index] != 'null') || values[index] == '') {
-                valueAdd.push(`'${values[index]}'`)
-            }
-            // jika nilainya numerik
-            else {
-                valueAdd.push(`${values[index]}`)
-            }
-        }
-
-        // Lakukan query untuk mengecek apakah id_barang sudah ada di database
-        dbConfig.query(`SELECT * FROM ${table} WHERE id_barang = '${id_barang}'`, (err, result) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send('Internal Server Error');
-            }
-
-            if (result.length > 0) {
-                console.log("| add brg\n");
-                // Jika id_barang sudah ada, lakukan UPDATE
-                dbConfig.query(`UPDATE ${table} SET ${SET.join(',')} WHERE id_barang = '${id_barang}'`, (err, result) => {
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).send('Internal Server Error');
-                    }
-
-                    res.status(200).send(result);
-                    // dbConfig.end();
-                });
-            } else {
-                console.log("| edit brg\n");
-                // jika id_user/id_inventory != null
-                if(id_user == 'null'){
-                    id_user = null
-                }else{
-                    id_user = `'${id_user}'`
+        setTimeout(() => {
+            dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_barang}',${id_user},${id_inventory},'${kode_barang}','${nama_barang}','${catatan}',${stok_barang},${harga_beli},${harga_jual},'${photo_barang}','${added}','${edited}')`, (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Internal Server Error');
                 }
-                if(id_inventory == 'null'){
-                    id_inventory = null
-                }else{
-                    id_inventory = `'${id_inventory}'`
-                }
-                // Jika id_barang belum ada, lakukan INSERT
-                dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_barang}',${id_user},${id_inventory},'${kode_barang}','${nama_barang}','${catatan}',${stok_barang},${harga_beli},${harga_jual},'${photo_barang}','${added}','${edited}')`, (err, result) => {
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).send('Internal Server Error');
-                    }
-
-                    res.status(200).send(result);
-                    // dbConfig.end();
-                });
-            }
-        });
+                res.status(200).send(result);
+            });
+        }, 1);
+        
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
         res.status(500).send("Terjadi kesalahan pada server: " + error);
