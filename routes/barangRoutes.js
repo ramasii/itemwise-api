@@ -5,7 +5,7 @@ const dbConfig = require('../dbConfig');
 const router = express.Router()
 
 const table = "data_barang" // ubah tabel jika perlu
-const fields = ["id_barang", "id_user", "id_inventory", "kode_barang", "nama_barang", "catatan", "stok_barang", "harga_beli", "harga_jual", "photo_barang", "added", "edited"]
+const fields = ["id_barang", "id_user", "id_inventory", "kode_barang", "nama_barang", "catatan", "stok_barang", "harga_beli", "harga_jual", "added", "edited"]
 
 // get all
 router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
@@ -127,12 +127,10 @@ router.post(`/addBulk`, tesjwt.verifyToken, async (req, res) => {
             var stok_barang = item['stok_barang']
             var harga_beli = item['harga_beli']
             var harga_jual = item['harga_jual']
-            var photo_barang = item['photo_barang']
-            console.log(photo_barang);
             var added = item['added']
             var edited = item['edited']
 
-            valueAdd.push(`('${id_barang}','${id_user}',${id_inventory},'${kode_barang}','${nama_barang}','${catatan}','${stok_barang}','${harga_beli}','${harga_jual}','${photo_barang}','${added}','${edited}')`)
+            valueAdd.push(`('${id_barang}','${id_user}',${id_inventory},'${kode_barang}','${nama_barang}','${catatan}','${stok_barang}','${harga_beli}','${harga_jual}','${added}','${edited}')`)
         }
         dbConfig.query(`DELETE FROM ${table} WHERE id_user='${id_user}';`,async (err,result)=>{
             if(err){
@@ -178,7 +176,6 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         var stok_barang = req.query.stok_barang
         var harga_beli = req.query.harga_beli
         var harga_jual = req.query.harga_jual
-        var photo_barang = req.query.photo_barang
         var added = req.query.added
         var edited = req.query.edited
 
@@ -194,7 +191,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         })
 
         setTimeout(() => {
-            dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_barang}',${id_user},${id_inventory},'${kode_barang}','${nama_barang}','${catatan}',${stok_barang},${harga_beli},${harga_jual},'${photo_barang}','${added}','${edited}')`, (err, result) => {
+            dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_barang}',${id_user},${id_inventory},'${kode_barang}','${nama_barang}','${catatan}',${stok_barang},${harga_beli},${harga_jual},'${added}','${edited}')`, (err, result) => {
                 if (err) {
                     console.error(err);
                     return res.status(500).send('Internal Server Error');
@@ -224,23 +221,8 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         var stok_barang = req.query.stok_barang
         var harga_beli = req.query.harga_beli
         var harga_jual = req.query.harga_jual
-        var photo_barang = `${req.query.photo_barang}` == '' ? "''" :`${req.query.photo_barang}`
         var added = `${req.query.added}`
         var edited = `${req.query.edited}`
-
-        // UPDATE data_barang SET id_barang='${id_barang}',
-        // id_user='${id_user}',
-        // id_inventory='${id_inventory}',
-        // kode_barang='${kode_barang}',
-        // nama_barang='${nama_barang}',
-        // catatan='${catatan_barang}',
-        // stok_barang=${stok_barang},
-        // harga_beli=${harga_beli},
-        // harga_jual=${harga_jual},
-        // photo_barang='${photo_barang}',
-        // added='${added}',
-        // edited='${edited}'
-        // WHERE id_barang="${id_barang}"
 
         console.log(`UPDATE data_barang SET 
         id_user='${id_user}',
@@ -251,7 +233,6 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         stok_barang=${stok_barang},
         harga_beli=${harga_beli},
         harga_jual=${harga_jual},
-        photo_barang=${photo_barang},
         added='${added}',
         edited='${edited}'
         WHERE id_barang="${id_barang}"`);
@@ -265,7 +246,6 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         stok_barang=${stok_barang},
         harga_beli=${harga_beli},
         harga_jual=${harga_jual},
-        photo_barang=${photo_barang},
         added='${added}',
         edited='${edited}'
         WHERE id_barang="${id_barang}"`, (err, result) => {

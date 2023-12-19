@@ -6,8 +6,7 @@ const fs = require('fs')
 const dirphoto = "./assets/photo_barang/"
 
 // ini dari bawaanya writefile uda otomatis replace, jadi anggap aja endpoint ini jadi satu sama update
-router.post("/upload", async (req, res) => {
-    var a = []
+router.post("/", async (req, res) => {
     try {
         // ini cara mendapatkan file, gatau gimana cara kerjanya, aku tau lewat stackoverflow
         // menurut percobaanku, ini mengatasi parameter multipart
@@ -15,8 +14,9 @@ router.post("/upload", async (req, res) => {
         form.parse(req, async (err, fields, files) => {
             var id_barang = fields['id_barang'][0];
             if (files['photo_barang'] != undefined) {
-                // ada local variable 'files', artinya beberapa file yang diterima, formatnya adalah json -> {"<nama_parameter>":[...]}
+                // ada local variable 'files', artinya bisa jadi ada beberapa file yang diterima, formatnya adalah json -> {"<nama_parameter>":[...]}
                 var tipefoto = files['photo_barang'][0]['mimetype'].match(/(?<=\/)\w+/g)[0]
+
                 // ada juga local var 'fields', artinya beberapa parameter yang bukan file, formatnya adalah json -> {"<nama_parameter>":[...]}
                 console.log('fields: ', fields);
                 // kira" outputnya gini -> fields:  { id_barang: [ '343dsfdf' ], nama_barang: [ 'sdadasdad2342442' ] }
@@ -24,7 +24,7 @@ router.post("/upload", async (req, res) => {
                 // old path ini adalah lokasi file yang sudah diterima, file ini biasanya ditaruh di temporary folder atau cache
                 let oldPath = files['photo_barang'][0].filepath;
                 // newpath adalah lokasi dimana pengen menyimpan filenya (<folder>/<nama>.<tipefile>)
-                let newPath = `./assets/photo_barang/${id_barang}.${tipefoto}`
+                let newPath = `./assets/photo_barang/${id_barang}.jpg`
                 // membaca file yang sudah diterima di folder temporary,
                 // ini membaca sebagai rawData/Buffer supaya bisa ditulis ulang
                 let rawData = fs.readFileSync(oldPath)
@@ -51,7 +51,7 @@ router.post("/upload", async (req, res) => {
 
 })
 
-router.delete("/delete", async (req, res) => {
+router.delete("/", async (req, res) => {
     try {
         const id_barang = req.query.id_barang
         // membaca direktori
