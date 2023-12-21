@@ -7,6 +7,7 @@ const dirphoto = "./assets/photo_barang/"
 
 // ini dari bawaanya writefile uda otomatis replace, jadi anggap aja endpoint ini jadi satu sama update
 router.post("/", async (req, res) => {
+    console.log("FOTO BARANG: START POST");
     try {
         // ini cara mendapatkan file, gatau gimana cara kerjanya, aku tau lewat stackoverflow
         // menurut percobaanku, ini mengatasi parameter multipart
@@ -36,22 +37,24 @@ router.post("/", async (req, res) => {
 
                 console.log(tipefoto);
                 res.send({ success: true });
-            } else {
-                // jika tidak ada file yang dikirim
-                console.log("tidak ada file");
-                fs.rm(`./assets/photo_barang/${id_barang}.jpeg`, function (err) {
-                    if (err) console.log(err)
-                })
-                res.send({ success: true, result: "hapus foto, karena tidak ada foto tidak diterima" })
-            }
+            } 
+            // else {
+            //     // jika tidak ada file yang dikirim
+            //     console.log("tidak ada file");
+            //     fs.rm(`./assets/photo_barang/${id_barang}.jpg`, function (err) {
+            //         if (err) console.log(err)
+            //     })
+            //     res.send({ success: true, result: "hapus foto, karena tidak ada foto tidak diterima" })
+            // }
         });
     } catch (error) {
         console.log("UPLOADIMAGE/UPLOAD ERR:" + error);
     }
-
+    console.log("FOTO BARANG: DONE");
 })
 
 router.delete("/", async (req, res) => {
+    console.log("FOTO BARANG: START DELETE");
     try {
         const id_barang = req.query.id_barang
         // membaca direktori
@@ -62,7 +65,7 @@ router.delete("/", async (req, res) => {
                 getFileStartsWith(id_barang + ".", (err2, file) => {
                     if (err2) {
                         console.log(`tidak ada file diawali: ${id_barang}`);
-                        res.status(500).send({ msg: `tidak ada file diawali ${id_barang}`, error: err2 })
+                        res.status(404).send({ msg: `tidak ada file diawali ${id_barang}`, error: err2 })
                     } else {
                         console.log(`hapus foto: ${file}`);
                         fs.rm(`${dirphoto}${file}`, err3 => {
@@ -82,9 +85,11 @@ router.delete("/", async (req, res) => {
         console.log("DELET FOTO BARANG ERROR:" + err);
         res.status(500).send({ error: err })
     }
+    console.log("FOTO BARANG: DONE");
 })
 
 router.get("/", (req, res) => {
+    console.log("FOTO BARANG: START GET");
     try {
         const id_barang = req.query.id_barang
         getFileStartsWith(id_barang + ".", (err, file) => {
@@ -110,6 +115,7 @@ router.get("/", (req, res) => {
         console.log("");
         res.status(500).send({ error: err })
     }
+    console.log("FOTO BARANG: DONE");
 })
 
 function getFileStartsWith(diawali, callback) {
