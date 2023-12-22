@@ -226,7 +226,7 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 
         console.log(`UPDATE data_barang SET 
         id_user='${id_user}',
-        id_inventory='${id_inventory}',
+        id_inventory=${id_inventory},
         kode_barang='${kode_barang}',
         nama_barang='${nama_barang}',
         catatan='${catatan}',

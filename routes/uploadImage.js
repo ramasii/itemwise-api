@@ -1,12 +1,13 @@
 const express = require("express");
 const path = require("path");
+const tesjwt = require("../tesjwt");
 const router = express.Router()
 const formidable = require('formidable');
 const fs = require('fs')
 const dirphoto = "./assets/photo_barang/"
 
 // ini dari bawaanya writefile uda otomatis replace, jadi anggap aja endpoint ini jadi satu sama update
-router.post("/", async (req, res) => {
+router.post("/", tesjwt.verifyToken, async (req, res) => {
     console.log("FOTO BARANG: START POST");
     try {
         // ini cara mendapatkan file, gatau gimana cara kerjanya, aku tau lewat stackoverflow
@@ -37,7 +38,7 @@ router.post("/", async (req, res) => {
 
                 console.log(tipefoto);
                 res.send({ success: true });
-            } 
+            }
             // else {
             //     // jika tidak ada file yang dikirim
             //     console.log("tidak ada file");
@@ -53,7 +54,7 @@ router.post("/", async (req, res) => {
     console.log("FOTO BARANG: DONE");
 })
 
-router.delete("/", async (req, res) => {
+router.delete("/", tesjwt.verifyToken, async (req, res) => {
     console.log("FOTO BARANG: START DELETE");
     try {
         const id_barang = req.query.id_barang
@@ -88,13 +89,13 @@ router.delete("/", async (req, res) => {
     console.log("FOTO BARANG: DONE");
 })
 
-router.get("/", (req, res) => {
+router.get("/", tesjwt.verifyToken, (req, res) => {
     console.log("FOTO BARANG: START GET");
     try {
         const id_barang = req.query.id_barang
         getFileStartsWith(id_barang + ".", (err, file) => {
             // ini resolve direktori fotonya, supaya bisa dimasukkan di parameternya res.sendfile
-            var filePath = path.resolve(__dirname,"."+dirphoto+file)
+            var filePath = path.resolve(__dirname, "." + dirphoto + file)
 
             if (err) {
                 console.log(`tidak ada file diawali: ${id_barang}`);
