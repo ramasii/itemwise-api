@@ -5,7 +5,7 @@ const dbConfig = require('../dbConfig');
 const router = express.Router()
 
 const table = "users" // ubah tabel jika perlu
-const fields = ["id_user", "username_user", "email_user", "photo_user", "password_user"]
+var fields = ["id_user", "username_user", "email_user", "photo_user", "password_user"]
 
 // get all
 router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
@@ -81,18 +81,21 @@ router.get(`/byEmail`, async (req, res) => {
 
 // add user
 router.post(`/add`, async (req, res) => {
+    console.log("add user");
     try {
         var id_user = req.query.id_user
         var username_user = req.query.username_user
         var email_user = req.query.email_user
         var photo_user = req.query.photo_user
         var password_user = req.query.password_user
+        var role = req.query.role
 
         var values = [`${id_user}`, `${username_user}`, `${email_user}`, `${photo_user}`, `${password_user}`]
 
-        console.log(`INSERT INTO ${table} (${fields.join(",")}) VALUES (${values.join(",")})`);
+        fields.push("role");
+        console.log(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${username_user}","${email_user}","${photo_user}","${password_user}", "${role}")`);
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${username_user}","${email_user}","${photo_user}","${password_user}")`, (err, result) => {
+        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${username_user}","${email_user}","${photo_user}","${password_user}", "${role}")`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)

@@ -98,22 +98,22 @@ router.get("/", tesjwt.verifyToken, (req, res) => {
             var filePath = path.resolve(__dirname, "." + dirphoto + file)
 
             if (err) {
-                console.log(`tidak ada file diawali: ${id_barang}`);
+                console.log(`GET: tidak ada file diawali: ${id_barang}`);
                 res.status(500).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
             } else {
                 console.log(`mengirim file ${file}`);
                 res.sendFile(filePath, (err2) => {
                     if (err2) {
-                        console.log('eror ngirim file:', err2);
+                        console.log('GET: eror ngirim file:', err2);
                         res.status(500).send({ msg: `eror saat ngirim file ${file}`, error: err2 });
                     } else {
-                        console.log('File sent successfully');
+                        console.log('GET: File sent successfully');
                     }
                 })
             }
         })
     } catch (err) {
-        console.log("");
+        console.log("GET err");
         res.status(500).send({ error: err })
     }
     console.log("FOTO BARANG: DONE");

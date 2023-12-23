@@ -74,6 +74,7 @@ const verifyTokenAdmin = async (req, res, next) => {
             console.error(error);
             return []
         });
+        // console.log(user_data);
         const role = user_data[0]["role"]
         if (role != "admin"){
             console.log(user_data[0]);
