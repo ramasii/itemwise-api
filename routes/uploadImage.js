@@ -89,12 +89,15 @@ router.delete("/", tesjwt.verifyToken, async (req, res) => {
     console.log("FOTO BARANG: DONE");
 })
 
+// teswt.verifytoken ini middleware untuk keamanan API, bagian ini terakhir aja
 router.get("/", tesjwt.verifyToken, (req, res) => {
     console.log("FOTO BARANG: START GET");
     try {
         const id_barang = req.query.id_barang
+
         getFileStartsWith(id_barang + ".", (err, file) => {
             // ini resolve direktori fotonya, supaya bisa dimasukkan di parameternya res.sendfile
+            // intinya harus diresolve direktorinya
             var filePath = path.resolve(__dirname, "." + dirphoto + file)
 
             if (err) {
