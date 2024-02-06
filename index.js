@@ -13,6 +13,7 @@ const inventoryRoutes = require("./routes/inventoryRoutes")
 const barangRoutes = require("./routes/barangRoutes")
 const authRoutes = require("./routes/authRoutes")
 const uploadImage = require("./routes/uploadImage")
+const kodeSRoute = require("./routes/kodeSRoute")
 
 // gunakan rute yang akan diimpor: app.use(<endpoint>, <rute>)
 app.use(`${anu}/users`, userRoutes)
@@ -20,6 +21,11 @@ app.use(`${anu}/inventory`, inventoryRoutes)
 app.use(`${anu}/barang`, barangRoutes)
 app.use(`${anu}/auth`, authRoutes)
 app.use(`${anu}/image`, uploadImage)
+app.use(`${anu}/lupaPass`, kodeSRoute)
+
+app.use(`${anu}/`, async (req,res)=>{
+  res.send({"status":"ok"})  
+})
 
 // jalankan server
 app.listen(port, () => {

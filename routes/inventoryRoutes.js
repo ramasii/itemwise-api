@@ -163,19 +163,19 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
             }
 
             if (result.length > 0) {
-                console.log("| add inv\n");
+                console.log("| edit inv\n");
                 // Jika id_inventory sudah ada, lakukan UPDATE
                 dbConfig.query(`UPDATE ${table} SET ${SET.join(',')} WHERE id_inventory = '${id_inventory}'`, (err, result) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).send('Internal Server Error');
                     }
-
+                    
                     res.status(200).send(result);
                     // dbConfig.end();
                 });
             } else {
-                console.log("| edit inv\n");
+                console.log("| add inv\n");
                 // Jika id_inventory belum ada, lakukan INSERT
                 dbConfig.query(`INSERT INTO ${table} (${fields.join(',')}) VALUES ('${id_inventory}',${id_user},'${nama_inventory}')`, (err, result) => {
                     if (err) {
@@ -249,6 +249,30 @@ router.delete(`/delete`, tesjwt.verifyToken, async (req, res) => {
                 res.send(result);
             } else {
                 res.send(`data tidak ditemukan: ${id_inventory}`)
+            }
+            dbConfig.end;
+        });
+    } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        res.status(500).send("Terjadi kesalahan pada server");
+    }
+});
+
+// delete by user
+router.delete(`/deleteByUser`, tesjwt.verifyToken, async (req, res) => {
+    var id_user = req.query.id_user
+    const token = req.headers['authorization'];
+    try {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
+        dbConfig.query(`DELETE FROM ${table} WHERE id_user="${id_user}" `, (err, result) => {
+            if (err) return;
+
+            if (result != "") {
+                res.send(result);
+            } else {
+                res.send(`data tidak ditemukan: ${id_user}`)
             }
             dbConfig.end;
         });

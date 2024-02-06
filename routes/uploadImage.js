@@ -102,7 +102,7 @@ router.get("/", tesjwt.verifyToken, (req, res) => {
 
             if (err) {
                 console.log(`GET: tidak ada file diawali: ${id_barang}`);
-                res.status(500).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
+                res.status(404).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
             } else {
                 console.log(`mengirim file ${file}`);
                 res.sendFile(filePath, (err2) => {
