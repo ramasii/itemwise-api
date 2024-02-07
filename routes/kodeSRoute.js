@@ -122,7 +122,8 @@ router.put('/', tesjwt.verifyToken, async (req, res) => {
 })
 
 // add
-router.post('/',tesjwt.verifyToken, async(req,res)=>{
+router.post('/', async(req,res)=>{
+    console.log("add kode sementara");
     try {
         var id_kode_s = req.query.id_kode_s
         var email_user = req.query.email_user != 'null' ? `'${req.query.email_user}'` : 'null'
@@ -130,7 +131,9 @@ router.post('/',tesjwt.verifyToken, async(req,res)=>{
         var added = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.toLocaleTimeString().replace(/\./g,':')}`
         var kode_s = randomText(6)
         var status = 'tersedia'
-
+        
+        console.log(email_user+" - "+id_kode_s);
+        
         dbConfig.query(`INSERT INTO ${table} VALUES ('${id_kode_s}', ${email_user}, '${kode_s}', '${status}', '${added}')`, (err,result)=>{
             if (err) {
                 res.status(500).send(`error database: ${err}`)
@@ -138,7 +141,6 @@ router.post('/',tesjwt.verifyToken, async(req,res)=>{
             }
             res.status(200).send(result);
         })
-
     } catch (error) {
         console.log(`kodeSRoute error: ${error}`);
         res.status(500).send(`kesalahan pada server: ${err}`)
