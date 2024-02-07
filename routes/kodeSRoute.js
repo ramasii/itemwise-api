@@ -60,7 +60,7 @@ router.get('/matching', async (req, res) => {
         })
 
         setTimeout(()=>{
-            console.log("part 2");
+            // console.log("part 2");
             dbConfig.query(`UPDATE ${table} SET status='selesai' WHERE kode_s='${kode_s}' && email_user='${email_user}'`,(err, result) => {
                 if (err) {
                     console.log(err);
@@ -127,12 +127,12 @@ router.post('/', async(req,res)=>{
     try {
         var id_kode_s = req.query.id_kode_s
         var email_user = req.query.email_user != 'null' ? `'${req.query.email_user}'` : 'null'
-        var date = new Date
-        var added = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.toLocaleTimeString().replace(/\./g,':')}`
+        var date = new Date()
+        var added = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.toLocaleTimeString().replace(/\./g,':')}`
         var kode_s = randomText(6)
         var status = 'tersedia'
         
-        console.log(email_user+" - "+id_kode_s);
+        console.log(email_user+" - "+id_kode_s + " - " + added);
         
         dbConfig.query(`INSERT INTO ${table} VALUES ('${id_kode_s}', ${email_user}, '${kode_s}', '${status}', '${added}')`, (err,result)=>{
             if (err) {
