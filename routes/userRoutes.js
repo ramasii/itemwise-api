@@ -27,7 +27,7 @@ router.get(`/`, tesjwt.verifyTokenAdmin, async (req, res) => {
 
 // get by id
 router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
-    
+
     try {
         // ambil data user dari token
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
@@ -51,7 +51,7 @@ router.get(`/byId`, tesjwt.verifyToken, async (req, res) => {
 });
 
 // get by email
-router.get(`/byEmail`, async (req, res) => {    
+router.get(`/byEmail`, async (req, res) => {
     try {
         var email_user = req.query['email_user']
         var password_user = req.query['password_user']
@@ -63,14 +63,14 @@ router.get(`/byEmail`, async (req, res) => {
 
             if (result != "") {
                 // res.status(200).send(result);
-                if(password_user == result[0]['password_user']){
+                if (password_user == result[0]['password_user']) {
                     // return result
-                    res.status(200).send({"msg":"success","result":result[0]})
-                }else{
-                    res.status(406).send({"msg":"wrong password"})
+                    res.status(200).send({ "msg": "success", "result": result[0] })
+                } else {
+                    res.status(406).send({ "msg": "wrong password" })
                 }
             } else {
-                res.status(202).send({"msg":"user not found"})
+                res.status(202).send({ "msg": "user not found" })
             }
             dbConfig.end;
         });
@@ -114,17 +114,17 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
         console.log("update userapi");
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
         var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
-        
+
         var id_user = req.query.id_user
         // var username_user = req.query.username_user
         var email_user = req.query.email_user
         // var photo_user = req.query.photo_user
         var password_user = req.query.password_user
         var role = req.query.role
-        
+
         var values = [id_user, email_user, password_user]
         var SET = []
-        
+
         for (const index in fields) {
             if (fields[index] != "id_user") {
                 SET.push(`${fields[index]}='${values[index]}'`)
@@ -150,6 +150,7 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 // delete user
 router.delete(`/delete`, tesjwt.verifyTokenAdmin, async (req, res) => {
     var id_user = req.query.id_user
+
     try {
         dbConfig.query(`DELETE FROM ${table} where id_user="${id_user}"`, (err, result) => {
             if (err) return;
@@ -157,14 +158,32 @@ router.delete(`/delete`, tesjwt.verifyTokenAdmin, async (req, res) => {
             if (result != "") {
                 res.send(result);
             } else {
-                res.send({"msg":`data tidak ditemukan: ${id_user}`})
+                res.send({ "msg": `data tidak ditemukan: ${id_user}` })
             }
             dbConfig.end;
         });
     } catch (error) {
         console.error("Terjadi kesalahan:", error);
-        res.status(500).send({"msg":"Terjadi kesalahan pada server"});
+        res.status(500).send({ "msg": "Terjadi kesalahan pada server" });
     }
 });
+
+router.put(`/setPassword`, tesjwt.verifyToken, async (req, res) => {
+    var email_user = req.query.email_user
+    var password = req.query.password
+
+    try {
+        dbConfig.query(`UPDATE ${table} SET password_user='${password}' WHERE email_user='${email_user}'`, (err,result)=>{
+            if(err){
+                res.status(500).send(`eror pada database: ${err}`)
+            }
+
+            res.send(result)
+        })
+    } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        res.status(500).send({ "msg": "Terjadi kesalahan pada server" });
+    }
+})
 
 module.exports = router

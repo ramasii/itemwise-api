@@ -6,7 +6,7 @@ function getUserData(email_user, password_user) {
     return new Promise((resolve, reject) => {
         try {
             dbConfig.query(`SELECT * FROM users 
-            WHERE email_user='${email_user}'`, (err, result) => {
+            WHERE email_user='${email_user}' && password_user='${password_user}'`, (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -20,13 +20,32 @@ function getUserData(email_user, password_user) {
     });
 }
 
-async function getUserDataByAuth(token){
+function getUserByKodeS(email_user, kode_s) {
+    return new Promise((resolve, reject) => {
+        try {
+            dbConfig.query(`SELECT *  FROM kode_sementara
+            WHERE email_user='${email_user}' 
+            && kode_s='${kode_s}' 
+            && status='tersedia'`, (err, result) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result)
+                }
+            })
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+
+async function getUserDataByAuth(token) {
     // ambil data user dari token, memastikan data ini diakses oleh pemilik
     var decoded = jwt.decode(token)
     var user_data = await getUserData(decoded["email"], decoded["pass"])
-    .then(result => {
-        return result
-    }).catch(error => {
+        .then(result => {
+            return result
+        }).catch(error => {
             console.error(error);
             return []
         });
@@ -63,20 +82,20 @@ const verifyTokenAdmin = async (req, res, next) => {
             }
             return res.status(403).send('token invalid');
         }
-        
+
 
         const user_data = await getUserData(decoded["email"], decoded["pass"])
-        .then(result => {
-            // console.log(result)
-            return result
-        })
-        .catch(error => {
-            console.error(error);
-            return []
-        });
+            .then(result => {
+                // console.log(result)
+                return result
+            })
+            .catch(error => {
+                console.error(error);
+                return []
+            });
         // console.log(user_data);
         const role = user_data[0]["role"]
-        if (role != "admin"){
+        if (role != "admin") {
             console.log(user_data[0]);
             return res.status(403).send("<h1>🛑 WOI 🛑</h1>waduh, anda bukan admin😂")
         }
@@ -104,4 +123,4 @@ const verifyTokenAdmin = async (req, res, next) => {
     
 } */
 
-module.exports = { verifyToken, verifyTokenAdmin, getUserData, jwt, secretKey,getUserDataByAuth }
+module.exports = { verifyToken, verifyTokenAdmin, getUserData, jwt, secretKey, getUserDataByAuth, getUserByKodeS }

@@ -283,6 +283,3 @@ router.delete(`/deleteByUser`, tesjwt.verifyToken, async (req, res) => {
 });
 
 module.exports = router
-
-// TODO: hmm... kyknya tiap kali request atau akses yang menggunakan parameter id barang/user/inventory itu...
-// harus dicek apakah dia pemilik dari data ini
