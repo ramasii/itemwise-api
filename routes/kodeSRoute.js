@@ -8,7 +8,7 @@ const router = express.Router()
 const table = "kode_sementara" // ubah tabel jika perlu
 const fields = ["id_kode_s", "email_user", "kode_s", "status", "added"]
 
-router.get('/', tesjwt.verifyToken, async (req, res) => {
+router.get('/', tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
         dbConfig.query(`SELECT * FROM ${table}`, (err, result) => {
             if (err) {
@@ -24,7 +24,7 @@ router.get('/', tesjwt.verifyToken, async (req, res) => {
 })
 
 // get by id
-router.get('/byId/:id', tesjwt.verifyToken, async (req, res) => {
+router.get('/byId/:id', tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
         var id_kode_s = req.params.id
 
@@ -43,7 +43,7 @@ router.get('/byId/:id', tesjwt.verifyToken, async (req, res) => {
 
 // get by kode_s & email_user
 // digunakan untuk mencocokkan kode_s yg diinput user
-router.get('/matching', async (req, res) => {
+router.get('/matching',tesjwt.verifyToken, async (req, res) => {
     // router.get('/matching', tesjwt.verifyToken, async (req, res) => {
     try {
         var kode_s = req.query.kode_s
@@ -95,22 +95,21 @@ router.get('/byUser', tesjwt.verifyToken, async (req, res) => {
 })
 
 // edit
-router.put('/', tesjwt.verifyToken, async (req, res) => {
+router.put('/', tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
         var id_kode_s = req.query.id_kode_s
         var email_user = req.query.email_user != 'null' ? `'${req.query.email_user}'` : 'null'
         var kode_s = req.query.kode_s
         var status = req.query.status
-        var added = req.query.added
+        // var added = req.query.added
 
         dbConfig.query(`UPDATE ${table} SET
-        id_kode_s = '${id_kode_s}',
-        email_user = '${email_user}',
+        email_user = ${email_user},
         kode_s = '${kode_s}',
-        status = '${status}',
-        added = '${added}'
-        WHERE id_kode_s=${id_kode_s}`, (err, result) => {
+        status = '${status}'
+        WHERE id_kode_s = '${id_kode_s}'`, (err, result) => {
             if (err) {
+                console.log(err);
                 res.status(500).send(`error database: ${err}`)
                 return
             }
@@ -206,10 +205,10 @@ router.post('/', async (req, res) => {
 })
 
 // delete
-router.delete('/:id', tesjwt.verifyToken, async (req, res) => {
+router.delete('/:id', tesjwt.verifyTokenAdmin, async (req, res) => {
     try {
         var id_kode_s = req.params.id
-        dbConfig.query(`DELETE FROM ${table} WHERE id_kode_s = ${id_kode_s}`, (err, result) => {
+        dbConfig.query(`DELETE FROM ${table} WHERE id_kode_s = '${id_kode_s}'`, (err, result) => {
             if (err) {
                 res.status(500).send(`error database: ${err}}`)
                 return

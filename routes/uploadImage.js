@@ -91,7 +91,7 @@ router.delete("/", tesjwt.verifyToken, async (req, res) => {
 
 // teswt.verifytoken ini middleware untuk keamanan API, bagian ini terakhir aja
 router.get("/", tesjwt.verifyToken, (req, res) => {
-    console.log("FOTO BARANG: START GET");
+    // console.log("FOTO BARANG: START GET");
     try {
         const id_barang = req.query.id_barang
 
@@ -101,29 +101,29 @@ router.get("/", tesjwt.verifyToken, (req, res) => {
             var filePath = path.resolve(__dirname, "." + dirphoto + file)
 
             if (err) {
-                console.log(`GET: tidak ada file diawali: ${id_barang}`);
+                // console.log(`GET: tidak ada file diawali: ${id_barang}`);
                 res.status(404).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
             } else {
-                console.log(`mengirim file ${file}`);
+                // console.log(`mengirim file ${file}`);
                 res.sendFile(filePath, (err2) => {
                     if (err2) {
-                        console.log('GET: eror ngirim file:', err2);
+                        // console.log('GET: eror ngirim file:', err2);
                         res.status(500).send({ msg: `eror saat ngirim file ${file}`, error: err2 });
                     } else {
-                        console.log('GET: File sent successfully');
+                        // console.log('GET: File sent successfully');
                     }
                 })
             }
         })
     } catch (err) {
-        console.log("GET err");
+        // console.log("GET err");
         res.status(500).send({ error: err })
     }
-    console.log("FOTO BARANG: DONE");
+    // console.log("FOTO BARANG: DONE");
 })
 
 function getFileStartsWith(diawali, callback) {
-    console.log(`cari file: ${diawali}`);
+    // console.log(`cari file: ${diawali}`);
     fs.readdir(dirphoto, (err, files) => {
         if (err) {
             console.error('Error reading directory:', err);
@@ -134,10 +134,10 @@ function getFileStartsWith(diawali, callback) {
         var file = files.find(e => e.startsWith(diawali))
 
         if (file) {
-            console.log("File ketemu:", file);
+            // console.log("File ketemu:", file);
             callback(null, file);
         } else {
-            console.log("File tidak ditemukan");
+            // console.log("File tidak ditemukan");
             callback('File not found', null);
         }
     })
