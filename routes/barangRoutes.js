@@ -180,7 +180,7 @@ router.post(`/add`, tesjwt.verifyToken, async (req, res) => {
         var edited = req.query.edited
 
         // yang pertama hapus barang yang ada, lalu tambahkan (replace data)
-        dbConfig.query(`DELETE FROM ${table} WHERE id_barang='${id_barang}';`,async (err,result)=>{
+        dbConfig.query(`DELETE FROM ${table} WHERE id_barang='${id_barang}' && id_user=${id_user};`,async (err,result)=>{
             if(err){
                 console.log(err);
                 return res.status(500).send({"msg":"server err"})
@@ -226,7 +226,7 @@ router.put(`/update`, tesjwt.verifyToken, async (req, res) => {
 
         console.log(`UPDATE data_barang SET 
         id_user='${id_user}',
-        id_inventory='${id_inventory}',
+        id_inventory=${id_inventory},
         kode_barang='${kode_barang}',
         nama_barang='${nama_barang}',
         catatan='${catatan}',
@@ -274,7 +274,7 @@ router.delete(`/delete`, tesjwt.verifyToken, async (req, res) => {
 
     try {
         // ambil data user dari token, memastikan data ini diakses oleh pemilik
-        var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+        // var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
 
         dbConfig.query(`DELETE FROM ${table} WHERE id_barang="${id_barang}"`, (err, result) => {
             if (err) return;
@@ -283,6 +283,30 @@ router.delete(`/delete`, tesjwt.verifyToken, async (req, res) => {
                 res.send(result);
             } else {
                 res.send(`data tidak ditemukan: ${id_barang}`)
+            }
+            dbConfig.end;
+        });
+    } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        res.status(500).send("Terjadi kesalahan pada server");
+    }
+});
+
+// deleteByUser
+router.delete(`/deleteByUser`, tesjwt.verifyToken, async (req, res) => {
+    var id_user = req.query.id_user
+
+    try {
+        // ambil data user dari token, memastikan data ini diakses oleh pemilik
+        // var user_data = await tesjwt.getUserDataByAuth(req.headers['authorization'])
+
+        dbConfig.query(`DELETE FROM ${table} WHERE id_user="${id_user}"`, (err, result) => {
+            if (err) return;
+
+            if (result != "") {
+                res.send(result);
+            } else {
+                res.send(`data tidak ditemukan: ${id_user}`)
             }
             dbConfig.end;
         });

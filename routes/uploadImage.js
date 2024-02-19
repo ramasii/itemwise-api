@@ -1,12 +1,13 @@
 const express = require("express");
 const path = require("path");
+const tesjwt = require("../tesjwt");
 const router = express.Router()
 const formidable = require('formidable');
 const fs = require('fs')
 const dirphoto = "./assets/photo_barang/"
 
 // ini dari bawaanya writefile uda otomatis replace, jadi anggap aja endpoint ini jadi satu sama update
-router.post("/", async (req, res) => {
+router.post("/", tesjwt.verifyToken, async (req, res) => {
     console.log("FOTO BARANG: START POST");
     try {
         // ini cara mendapatkan file, gatau gimana cara kerjanya, aku tau lewat stackoverflow
@@ -37,7 +38,7 @@ router.post("/", async (req, res) => {
 
                 console.log(tipefoto);
                 res.send({ success: true });
-            } 
+            }
             // else {
             //     // jika tidak ada file yang dikirim
             //     console.log("tidak ada file");
@@ -53,7 +54,7 @@ router.post("/", async (req, res) => {
     console.log("FOTO BARANG: DONE");
 })
 
-router.delete("/", async (req, res) => {
+router.delete("/", tesjwt.verifyToken, async (req, res) => {
     console.log("FOTO BARANG: START DELETE");
     try {
         const id_barang = req.query.id_barang
@@ -88,38 +89,41 @@ router.delete("/", async (req, res) => {
     console.log("FOTO BARANG: DONE");
 })
 
-router.get("/", (req, res) => {
-    console.log("FOTO BARANG: START GET");
+// teswt.verifytoken ini middleware untuk keamanan API, bagian ini terakhir aja
+router.get("/", tesjwt.verifyToken, (req, res) => {
+    // console.log("FOTO BARANG: START GET");
     try {
         const id_barang = req.query.id_barang
+
         getFileStartsWith(id_barang + ".", (err, file) => {
             // ini resolve direktori fotonya, supaya bisa dimasukkan di parameternya res.sendfile
-            var filePath = path.resolve(__dirname,"."+dirphoto+file)
+            // intinya harus diresolve direktorinya
+            var filePath = path.resolve(__dirname, "." + dirphoto + file)
 
             if (err) {
-                console.log(`tidak ada file diawali: ${id_barang}`);
-                res.status(500).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
+                // console.log(`GET: tidak ada file diawali: ${id_barang}`);
+                res.status(404).send({ msg: `tidak ada file diawali ${id_barang}`, error: err })
             } else {
-                console.log(`mengirim file ${file}`);
+                // console.log(`mengirim file ${file}`);
                 res.sendFile(filePath, (err2) => {
                     if (err2) {
-                        console.log('eror ngirim file:', err2);
+                        // console.log('GET: eror ngirim file:', err2);
                         res.status(500).send({ msg: `eror saat ngirim file ${file}`, error: err2 });
                     } else {
-                        console.log('File sent successfully');
+                        // console.log('GET: File sent successfully');
                     }
                 })
             }
         })
     } catch (err) {
-        console.log("");
+        // console.log("GET err");
         res.status(500).send({ error: err })
     }
-    console.log("FOTO BARANG: DONE");
+    // console.log("FOTO BARANG: DONE");
 })
 
 function getFileStartsWith(diawali, callback) {
-    console.log(`cari file: ${diawali}`);
+    // console.log(`cari file: ${diawali}`);
     fs.readdir(dirphoto, (err, files) => {
         if (err) {
             console.error('Error reading directory:', err);
@@ -130,10 +134,10 @@ function getFileStartsWith(diawali, callback) {
         var file = files.find(e => e.startsWith(diawali))
 
         if (file) {
-            console.log("File ketemu:", file);
+            // console.log("File ketemu:", file);
             callback(null, file);
         } else {
-            console.log("File tidak ditemukan");
+            // console.log("File tidak ditemukan");
             callback('File not found', null);
         }
     })
