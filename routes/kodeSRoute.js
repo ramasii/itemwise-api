@@ -125,6 +125,7 @@ router.put('/', tesjwt.verifyTokenAdmin, async (req, res) => {
 router.post('/', async (req, res) => {
     console.log("add kode sementara");
     try {
+        // ini variabel untuk data kode sementara
         var id_kode_s = req.query.id_kode_s
         var email_user = req.query.email_user != 'null' ? `'${req.query.email_user}'` : 'null'
         var date = new Date()
@@ -133,7 +134,8 @@ router.post('/', async (req, res) => {
         var status = 'tersedia'
 
         console.log(email_user + " - " + id_kode_s + " - " + added);
-
+        
+        // lakukan query nambah kode
         dbConfig.query(`INSERT INTO ${table} VALUES ('${id_kode_s}', ${email_user}, '${kode_s}', '${status}', '${added}')`, (err, result) => {
             if (err) {
                 res.status(500).send(`error database: ${err}`)
@@ -141,9 +143,10 @@ router.post('/', async (req, res) => {
             }
             // TODO: tambahkan nodemailer
 
-            // jika email tidak null
+            // jika email tidak null maka bisa kirim pesan ke email user
             if (email_user != 'null') {
 
+                // buat transporter menggunakan email dan password dari 'app password'
                 const mailTransporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
@@ -151,18 +154,22 @@ router.post('/', async (req, res) => {
                         pass: 'gergydqxiveenudh'
                     }
                 })
-
+                
+                // ini aku bikin style nya pakai mailgen
+                // install dulu mailgen, run: npm i mailgen
+                // lalu jangan lupa import package nya
                 const mailGenerator = new mailgen({
                     theme: "default",
                     product: {
-                        name: "Mailgen",
+                        name: "Item Wise",
                         link: "https://mailgen.js"
                     }
                 })
 
+                // lalu generate isi pesan menggunakan variabel di atas
                 const mail = mailGenerator.generate({
                     body: {
-                        title: "Item Wise",
+                        title: "Kode sementara",
                         name: email_user,
                         intro: "Kami menerima permintaan ubah password dari akun Anda, berikut adalah kode sementara untuk melanjutkan",
                         table:{
@@ -178,6 +185,8 @@ router.post('/', async (req, res) => {
                     }
                 })
 
+                // ini pengaturan pengiriman, bisa isi pengirim (from:) dan penerima (to:)
+                // penerima haru memiliki email yang benar, jika tidak benar maka pesan ga terkirim
                 const sendOptions = {
                     from: 'no-reply <Item Wise>',
                     to: req.query.email_user,
@@ -186,6 +195,7 @@ router.post('/', async (req, res) => {
                     // text: `Kami menerima permintaan ubah password dari akun Anda, berikut adalah kode sementara untuk melanjutkan\n \n${kode_s}\n \nJika bukan Anda maka abaikan pesan ini`
                 }
 
+                // lalu kirim menggunakan transporter yang sudah dibuat tadi, masukkan juga argumen pengaturan pengiriman
                 mailTransporter.sendMail(sendOptions, function (error, info) {
                     if (error) {
                         console.log(`sendmail eror: ${error}`);
