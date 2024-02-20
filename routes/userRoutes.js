@@ -94,9 +94,9 @@ router.post(`/add`, async (req, res) => {
         var values = [`${id_user}`, `${email_user}`, `${password_user}`]
 
         fields.push("role");
-        console.log(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${email_user}","${password_user}", "${role}")`);
+        console.log(`INSERT INTO ${table} ("${id_user}","${email_user}","${password_user}", "${role}")`);
 
-        dbConfig.query(`INSERT INTO ${table} (${fields.join(",")}) VALUES ("${id_user}","${email_user}","${password_user}", "${role}")`, (err, result) => {
+        dbConfig.query(`INSERT INTO ${table} VALUES ("${id_user}","${email_user}", "${role}","${password_user}")`, (err, result) => {
             if (err) return;
 
             res.status(200).send(result)

@@ -38,7 +38,7 @@ router.get('/shortAuth', async (req, res)=>{
             res.status(403).send("data yang dimaksud tidak ada")
         }else{
             const payload = {email:email_user, kode_s:kode_s}
-            const token = jwt.sign(payload, secretKey, {expiresIn: '10m'})
+            const token = jwt.sign(payload, secretKey, {expiresIn: '1m'})
             res.send({"msg":"success","token":token})
         }
 
